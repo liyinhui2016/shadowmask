@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * jdbc task
  */
-public abstract class JDBCTask<W extends ProcedureWatcher> implements Task<W> {
+public abstract class JDBCTask<W extends ProcedureWatcher,DESC extends JDBCConnectionDesc> implements Task<W> {
 
   private final List<W> watchers = new ArrayList<>();
 
@@ -122,6 +122,6 @@ public abstract class JDBCTask<W extends ProcedureWatcher> implements Task<W> {
    *
    * @return
    */
-  public abstract JDBCConnectionDesc connectionDesc();
+  public abstract DESC connectionDesc();
 
 }

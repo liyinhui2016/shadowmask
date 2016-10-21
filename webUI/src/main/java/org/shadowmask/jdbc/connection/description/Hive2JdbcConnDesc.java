@@ -24,6 +24,16 @@ public abstract class Hive2JdbcConnDesc implements JDBCConnectionDesc {
     return "hive2";
   }
 
+  // default schema .
+  @Override public String schema() {
+    return "default";
+  }
+
+  //hive server default port .
+  @Override public int port() {
+    return 10000;
+  }
+
   @Override public String toUrl() {
     return String
         .format("jdbc:%s://%s:%s/%s", prefix(), host(), port(), schema());

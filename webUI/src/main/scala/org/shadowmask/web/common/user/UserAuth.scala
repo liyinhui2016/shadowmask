@@ -279,9 +279,9 @@ object LdapToolKit {
       accessLdap[List[LdapUser]](conn=>{
         conn.bind(manager,managerPwd)
         val cursor = conn.search(userDomain,"(objectclass=*)",SearchScope.SUBTREE)
-        val list = Nil
+        var list:List[LdapUser] = Nil
         while (cursor.next()){
-          new LdapUser(cursor.get()) :: list
+          list = new LdapUser(cursor.get()) :: list
         }
         list
       },(conn,e)=>{

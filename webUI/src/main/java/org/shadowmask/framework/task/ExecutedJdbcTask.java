@@ -18,6 +18,7 @@
 package org.shadowmask.framework.task;
 
 import org.apache.log4j.Logger;
+import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
 import org.shadowmask.model.datareader.Command;
 import org.shadowmask.utils.NeverThrow;
 
@@ -28,8 +29,8 @@ import java.sql.SQLException;
 /**
  * Executed jdbc  task .
  */
-public abstract class ExecutedJdbcTask<W extends RollbackableProcedureWatcher>
-    extends JDBCTask<W> {
+public abstract class ExecutedJdbcTask<W extends RollbackableProcedureWatcher,DESC extends JDBCConnectionDesc>
+    extends JDBCTask<W,DESC> {
   Logger logger = Logger.getLogger(this.getClass());
 
   @Override public void invoke() {

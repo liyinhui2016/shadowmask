@@ -15,14 +15,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.shadowmask.jdbc.connection.description;
 
-package org.shadowmask.jdbc.connection;
+public abstract class SimpleHive2JdbcConnDesc implements JDBCConnectionDesc {
+  @Override public String host() {
+    return null;
+  }
 
-import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
+  @Override public int port() {
+    return 0;
+  }
 
-import java.sql.Connection;
+  @Override public String schema() {
+    return null;
+  }
 
-public interface ConnectionProvider<DESC extends JDBCConnectionDesc> extends Supplier<Connection> {
+  @Override public String prefix() {
+    return null;
+  }
 
-  Connection get(DESC desc);
+  @Override public String toUrl() {
+    return null;
+  }
+
+  // simple connection username
+  abstract public String user();
+
+  // simple connection user' password .
+  abstract public String password();
 }

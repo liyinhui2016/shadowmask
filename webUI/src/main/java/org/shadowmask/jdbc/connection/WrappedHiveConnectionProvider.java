@@ -19,6 +19,7 @@
 package org.shadowmask.jdbc.connection;
 
 import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
+import org.shadowmask.jdbc.connection.description.KerberizedHive2JdbcConnDesc;
 
 import java.sql.Connection;
 
@@ -26,14 +27,14 @@ import java.sql.Connection;
  * get Connection due to config,
  * should support both kerberized and ldap according to configuration .
  */
-public class WrappedHiveConnectionProvider implements ConnectionProvider {
+public class WrappedHiveConnectionProvider<DESC extends JDBCConnectionDesc> implements ConnectionProvider<DESC> {
 
   @Override public Connection get() {
     return KerberizedHiveConnectionProvider.getInstance().get();
   }
 
-  @Override public Connection get(JDBCConnectionDesc desc) {
-    return KerberizedHiveConnectionProvider.getInstance().get(desc);
+  @Override public Connection get(DESC desc) {
+    return KerberizedHiveConnectionProvider.getInstance().get((KerberizedHive2JdbcConnDesc) desc);
   }
 
   // singleton
@@ -46,5 +47,4 @@ public class WrappedHiveConnectionProvider implements ConnectionProvider {
   public static WrappedHiveConnectionProvider getInstance() {
     return instance;
   }
-
 }
