@@ -17,26 +17,7 @@
  */
 package org.shadowmask.jdbc.connection.description;
 
-public abstract class SimpleHive2JdbcConnDesc implements JDBCConnectionDesc {
-  @Override public String host() {
-    return null;
-  }
-
-  @Override public int port() {
-    return 0;
-  }
-
-  @Override public String schema() {
-    return null;
-  }
-
-  @Override public String prefix() {
-    return null;
-  }
-
-  @Override public String toUrl() {
-    return null;
-  }
+public abstract class SimpleHive2JdbcConnDesc extends Hive2JdbcConnDesc {
 
   // simple connection username
   abstract public String user();

@@ -41,7 +41,9 @@ public class WrappedConnectionProvider implements ConnectionProvider {
       return SimpleHiveConnectionProvider.getInstance()
           .get((SimpleHive2JdbcConnDesc) desc);
     }
-    return null;
+    throw new RuntimeException(String
+        .format("jdbc connection not acquired with jdbc description : %s ",
+            desc));
   }
 
   // singleton

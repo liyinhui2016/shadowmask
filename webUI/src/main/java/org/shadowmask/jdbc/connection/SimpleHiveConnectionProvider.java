@@ -27,7 +27,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class SimpleHiveConnectionProvider implements ConnectionProvider<SimpleHive2JdbcConnDesc> {
+public class SimpleHiveConnectionProvider<DESC extends SimpleHive2JdbcConnDesc> implements ConnectionProvider<DESC> {
 
   private static Logger logger =
       Logger.getLogger(SimpleHiveConnectionProvider.class);
@@ -43,7 +43,7 @@ public class SimpleHiveConnectionProvider implements ConnectionProvider<SimpleHi
     }
   }
 
-  @Override public Connection get(SimpleHive2JdbcConnDesc desc) {
+  @Override public Connection get(DESC desc) {
     try {
       return DriverManager.getConnection(desc.toUrl(),desc.user(),desc.password());
     } catch (SQLException e) {
@@ -57,7 +57,7 @@ public class SimpleHiveConnectionProvider implements ConnectionProvider<SimpleHi
   }
 
   private static SimpleHiveConnectionProvider instance =
-      new SimpleHiveConnectionProvider();
+      new SimpleHiveConnectionProvider<SimpleHive2JdbcConnDesc>();
 
   public static SimpleHiveConnectionProvider getInstance() {
     return instance;

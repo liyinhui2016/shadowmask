@@ -18,6 +18,9 @@
 
 package org.shadowmask.jdbc.connection.description;
 
+/**
+ * base class of hive2 server connection description information.
+ */
 public abstract class Hive2JdbcConnDesc implements JDBCConnectionDesc {
 
   @Override public String prefix() {
