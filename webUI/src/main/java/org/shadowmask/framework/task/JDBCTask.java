@@ -115,7 +115,7 @@ public abstract class JDBCTask<W extends ProcedureWatcher,DESC extends JDBCConne
    *
    * @return
    */
-  public abstract boolean rollbackAble();
+  public abstract boolean transationSupport();
 
   /**
    * connection string description

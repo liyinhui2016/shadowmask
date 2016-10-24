@@ -41,7 +41,7 @@ public abstract class HiveExecutionTask<DESC extends JDBCConnectionDesc>
       return connectionProvider.get();
   }
 
-  @Override public boolean rollbackAble() {
+  @Override public boolean transationSupport() {
     return false;
   }
 

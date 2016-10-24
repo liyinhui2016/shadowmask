@@ -153,7 +153,7 @@ class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
   get("/table", operation(dataTableGetOperation)) {
 
 
-    val authToken = request.getHeader("authToken")
+    val authToken = request.getHeader("Authorization")
 
     println("authToken: " + authToken)
 
@@ -182,27 +182,31 @@ class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
 
     println("rows: " + rows)
 
+//    HiveService().getTableViewObject(source.get,schema.get,name.get,rows.get)
+    HiveService().getTableViewObject("dc1","tests","user_info",10)
 
-    TableResult(
-      0,
-      "ok",
-      TableContent(
-        List(
-          TableTitle("id", "ID", "ID", "#0000FF"),
-          TableTitle("username", "user's name ", "HALF_ID", "#0000FF"),
-          TableTitle("url", "some web site", "SENSITIVE", "#0000FF"),
-          TableTitle("addr", "address", "NONE_SENSITIVE", "#0000FF")
-        ),
-        List(
-          List("1", "tom", "http://ww.a.com", "qianmendajie"),
-          List("2", "tom", "http://ww.cca.com", "renminguangchang"),
-          List("3", "tom", "http://ww.dda.com", "东方明珠"),
-          List("6", "tom", "http://ww.aff.com", "united states"),
-          List("4", "tom", "http://ww.add.com", "japan"),
-          List("2", "tom", "http://ww.cca.com", "earth")
-        )
-      )
-    )
+
+
+//    TableResult(
+//      0,
+//      "ok",
+//      TableContent(
+//        List(
+//          TableTitle("id", "ID", "ID", "#0000FF"),
+//          TableTitle("username", "user's name ", "HALF_ID", "#0000FF"),
+//          TableTitle("url", "some web site", "SENSITIVE", "#0000FF"),
+//          TableTitle("addr", "address", "NONE_SENSITIVE", "#0000FF")
+//        ),
+//        List(
+//          List("1", "tom", "http://ww.a.com", "qianmendajie"),
+//          List("2", "tom", "http://ww.cca.com", "renminguangchang"),
+//          List("3", "tom", "http://ww.dda.com", "东方明珠"),
+//          List("6", "tom", "http://ww.aff.com", "united states"),
+//          List("4", "tom", "http://ww.add.com", "japan"),
+//          List("2", "tom", "http://ww.cca.com", "earth")
+//        )
+//      )
+//    )
   }
 
 

@@ -35,7 +35,7 @@ public abstract class QueryJdbcTask<T extends Serializable, W extends ProcedureW
   @Override public void setUp() {
   }
 
-  @Override public boolean rollbackAble() {
+  @Override public boolean transationSupport() {
     return false;
   }
 

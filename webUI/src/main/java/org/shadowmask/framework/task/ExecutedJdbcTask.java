@@ -29,23 +29,28 @@ import java.sql.SQLException;
 /**
  * Executed jdbc  task .
  */
-public abstract class ExecutedJdbcTask<W extends RollbackableProcedureWatcher,DESC extends JDBCConnectionDesc>
-    extends JDBCTask<W,DESC> {
+public abstract class ExecutedJdbcTask<W extends RollbackableProcedureWatcher, DESC extends JDBCConnectionDesc>
+    extends JDBCTask<W, DESC> {
   Logger logger = Logger.getLogger(this.getClass());
 
   @Override public void invoke() {
     Connection connection = null;
     try {
       triggerPreStart();
+      connection = connectDB();
       PreparedStatement stm = connection.prepareStatement(sql());
       stm.execute();
-      connection.commit();
+      if (transationSupport()) {
+        connection.commit();
+      }
       triggerComplete();
     } catch (Exception e) {
+      e.printStackTrace();
+
       logger.warn(
           String.format("Exception occurred when execute sql[ %s ]", sql()), e);
       triggerException(e);
-      if (rollbackAble()) {
+      if (transationSupport()) {
         try {
           triggerPreRollback();
           connection.rollback();
