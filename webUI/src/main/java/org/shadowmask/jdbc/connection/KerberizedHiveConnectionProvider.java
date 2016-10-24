@@ -33,11 +33,11 @@ import java.sql.SQLException;
 public class KerberizedHiveConnectionProvider<DESC extends KerberizedHive2JdbcConnDesc>
     implements ConnectionProvider<DESC> {
 
-  private boolean kdcLoginSuccessfully = true;
+//  private boolean kdcLoginSuccessfully = true;
   private static Logger logger =
       Logger.getLogger(KerberizedHiveConnectionProvider.class);
 
-  {
+  /*{
     System.setProperty("java.security.krb5.realm", HiveProps.krbRealm);
     System.setProperty("java.security.krb5.kdc", HiveProps.krbKDC);
     Configuration conf = new Configuration();
@@ -55,10 +55,10 @@ public class KerberizedHiveConnectionProvider<DESC extends KerberizedHive2JdbcCo
     }
 
   }
-
+*/
   @Override public Connection get() {
-    if (!kdcLoginSuccessfully)
-      throw new RuntimeException("get connection failed,kdc login failed");
+//    if (!kdcLoginSuccessfully)
+//      throw new RuntimeException("get connection failed,kdc login failed");
     try {
       return DriverManager.getConnection(HiveProps.url);
     } catch (SQLException e) {
@@ -68,8 +68,8 @@ public class KerberizedHiveConnectionProvider<DESC extends KerberizedHive2JdbcCo
   }
 
   @Override public Connection get(DESC desc) {
-    if (!kdcLoginSuccessfully)
-      throw new RuntimeException("get connection failed,kdc login failed");
+//    if (!kdcLoginSuccessfully)
+//      throw new RuntimeException("get connection failed,kdc login failed");
     try {
       return DriverManager.getConnection(desc.toUrl());
     } catch (SQLException e) {

@@ -18,8 +18,11 @@
 
 package org.shadowmask.jdbc.connection;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
 import org.shadowmask.jdbc.connection.description.KerberizedHive2JdbcConnDesc;
+import org.shadowmask.jdbc.connection.description.SimpleHive2JdbcConnDesc;
+import org.shadowmask.utils.HiveProps;
 
 import java.sql.Connection;
 
@@ -27,14 +30,33 @@ import java.sql.Connection;
  * get Connection due to config,
  * should support both kerberized and ldap according to configuration .
  */
-public class WrappedHiveConnectionProvider<DESC extends JDBCConnectionDesc> implements ConnectionProvider<DESC> {
+public class WrappedHiveConnectionProvider<DESC extends JDBCConnectionDesc>
+    implements ConnectionProvider<DESC> {
 
   @Override public Connection get() {
-    return KerberizedHiveConnectionProvider.getInstance().get();
+    if ("simple".equals(HiveProps.authMethod)) {
+      return SimpleHiveConnectionProvider.getInstance().get();
+    } else if ("kerberos".equals(HiveProps.authMethod)) {
+      return KerberizedHiveConnectionProvider.getInstance().get();
+    } else {
+      throw new RuntimeException(String
+          .format("authorization method %s not support in HIVE",
+              HiveProps.authMethod));
+    }
   }
 
   @Override public Connection get(DESC desc) {
-    return KerberizedHiveConnectionProvider.getInstance().get((KerberizedHive2JdbcConnDesc) desc);
+    if (desc instanceof KerberizedHive2JdbcConnDesc) {
+      return KerberizedHiveConnectionProvider.getInstance()
+          .get((KerberizedHive2JdbcConnDesc) desc);
+    } else if (desc instanceof SimpleHive2JdbcConnDesc) {
+      return SimpleHiveConnectionProvider.getInstance()
+          .get((SimpleHive2JdbcConnDesc) desc);
+    } else {
+      throw new RuntimeException(
+          String.format("connection description %s not supported.", desc));
+    }
+
   }
 
   // singleton

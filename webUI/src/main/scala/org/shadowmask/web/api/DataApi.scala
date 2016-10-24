@@ -25,6 +25,7 @@ import org.scalatra.servlet.FileUploadSupport
 import org.scalatra.swagger._
 import org.shadowmask.web.common.user.{ConfiguredAuthProvider, User}
 import org.shadowmask.web.model._
+import org.shadowmask.web.service.HiveService
 
 class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
   with FileUploadSupport
@@ -87,53 +88,55 @@ class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
 
     println("source: " + source)
 
+    HiveService().getSchemaViewObject()
 
 
-    SchemaResult(
-      0,
-      "ok",
-      List(
-        SchemaObjectParent(
-          "HIVE",
-          List(
-            SchemaObject(
-              "schema1",
-              "schemaName",
-              List(
-                TableProp("table1", "tabledesc"), TableProp("table1", "tabledesc"), TableProp("table1", "tabledesc")
-              )
-            ),
-            SchemaObject(
-              "schema1",
-              "schemaName",
-              List(
-                TableProp("table1", "tabledesc")
-              )
-            ),
-            SchemaObject(
-              "schema1",
-              "schemaName",
-              List(
-                TableProp("table1", "tabledesc"), TableProp("table1", "tabledesc")
-              )
-            )
-          )
-        ),
-        SchemaObjectParent(
-          "SPARK",
-          List(
-            SchemaObject(
-              "schema1",
-              "schemaName",
-              List(
-                TableProp("table1", "tabledesc")
-              )
-            )
-          )
-        )
-
-      )
-    )
+    //
+    //    SchemaResult(
+    //      0,
+    //      "ok",
+    //      List(
+    //        SchemaObjectParent(
+    //          "HIVE",
+    //          List(
+    //            SchemaObject(
+    //              "schema1",
+    //              "schemaName",
+    //              List(
+    //                TableProp("table1", "tabledesc"), TableProp("table1", "tabledesc"), TableProp("table1", "tabledesc")
+    //              )
+    //            ),
+    //            SchemaObject(
+    //              "schema1",
+    //              "schemaName",
+    //              List(
+    //                TableProp("table1", "tabledesc")
+    //              )
+    //            ),
+    //            SchemaObject(
+    //              "schema1",
+    //              "schemaName",
+    //              List(
+    //                TableProp("table1", "tabledesc"), TableProp("table1", "tabledesc")
+    //              )
+    //            )
+    //          )
+    //        ),
+    //        SchemaObjectParent(
+    //          "SPARK",
+    //          List(
+    //            SchemaObject(
+    //              "schema1",
+    //              "schemaName",
+    //              List(
+    //                TableProp("table1", "tabledesc")
+    //              )
+    //            )
+    //          )
+    //        )
+    //
+    //      )
+    //    )
   }
 
 

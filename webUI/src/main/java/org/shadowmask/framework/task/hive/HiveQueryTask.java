@@ -50,10 +50,11 @@ public abstract class HiveQueryTask<T extends Serializable, DESC extends JDBCCon
   }
 
   @Override public Connection connectDB() {
-    if (connectionDesc() != null)
+    if (connectionDesc() != null) {
       return connectionProvider.get(connectionDesc());
-    else
+    } else {
       return connectionProvider.get();
+    }
   }
 
 }
