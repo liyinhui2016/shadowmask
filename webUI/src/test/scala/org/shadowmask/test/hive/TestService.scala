@@ -26,6 +26,7 @@ import org.shadowmask.framework.datacenter.hive.{HiveDcContainer, KerberizedHive
 import org.shadowmask.framework.task.{JdbcResultCollector, ProcedureWatcher}
 import org.shadowmask.framework.task.hive.{HiveExecutionTask, HiveQueryTask}
 import org.shadowmask.jdbc.connection.description.KerberizedHive2JdbcConnDesc
+import org.shadowmask.web.api.MaskRules
 import org.shadowmask.web.service.{Executor, HiveService}
 
 import scala.util.Random
@@ -149,7 +150,7 @@ object TestService {
   def testUdf():Unit={
     var dc = dcContainer.getDc("dc1")
     val task = new HiveQueryTask[String,KerberizedHive2JdbcConnDesc] {
-      override def sql(): String = """select skmail("abddddc@xxx.com",3) as ttt """
+      override def sql(): String = """select sk_phone("010-22234234",1) as ttt """
 
       override def connectionDesc(): KerberizedHive2JdbcConnDesc = new KerberizedHive2JdbcConnDesc {
         override def principal(): String = dc.asInstanceOf[KerberizedHiveDc].getPrincipal
@@ -177,7 +178,11 @@ object TestService {
       override def onConnection(connection: Connection): Unit = {
         connection.prepareStatement("add jar hdfs:///tmp/udf/shadowmask-core-0.1-SNAPSHOT.jar").execute();
         connection.prepareStatement("add jar hdfs:///tmp/udf/hive-engine-0.1-SNAPSHOT.jar").execute();
-        connection.prepareStatement("CREATE TEMPORARY FUNCTION skmail AS 'org.shadowmask.engine.hive.udf.UDFEmail'").execute();
+        for((k,(func,clazz))<-MaskRules.commonFuncMap){
+          val sql = s"CREATE TEMPORARY FUNCTION $func AS '$clazz'"
+          println(sql)
+          connection.prepareStatement(sql).execute();
+        }
         connection.commit()
       }
     })

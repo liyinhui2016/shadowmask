@@ -71,25 +71,47 @@ class HiveService {
     TableResult(0, "ok", TableContent({
       var i = 0;
       val titleAndValue =
-      for ((name, cType) <- getTableTile(dcName, schemaName, tableName).get) yield {
-        new javafx.util.Pair[String,String](name,if(data.get.size>0){ i+=1; data.get(0)(i-1) } else "")
-      }
+        for ((name, cType) <- getTableTile(dcName, schemaName, tableName).get) yield {
+          new javafx.util.Pair[String, String](name, if (data.get.size > 0) {
+            i += 1;
+            data.get(0)(i - 1)
+          } else "")
+        }
       val types = DataTypeDiscovery.inspectTypes(titleAndValue.asJava).asScala.toList
 
       (for (i <- 0 until types.size) yield {
         val t = types(i).name() match {
-          case "IDENTIFIER" =>TitleType.ID
-          case "QUSI_IDENTIFIER"=>TitleType.HALF_ID
-          case "SENSITIVE"=>TitleType.SENSITIVE
-          case "NON_SENSITIVE"=>TitleType.NONE_SENSITIVE
+          case "IDENTIFIER" => TitleType.ID
+          case "QUSI_IDENTIFIER" => TitleType.HALF_ID
+          case "SENSITIVE" => TitleType.SENSITIVE
+          case "NON_SENSITIVE" => TitleType.NONE_SENSITIVE
         }
-        TableTitle(titleAndValue(i).getKey,titleAndValue(i).getKey,t.name,t.color)
+        TableTitle(titleAndValue(i).getKey, titleAndValue(i).getKey, t.name, t.color)
       }).toList
     }, {
       data
     }))
   }
 
+
+  def getMaskSql(request: MaskRequest): String = {
+    val columns = getTableTile(request.dsSource.get, request.dsSchema.get, request.dsTable.get) match {
+      case None => List()
+      case Some(list:List[(String,String)])=> for ((name,_) <- list) yield name
+    }
+    s"""
+       | CREATE ${
+      request.distType.get.toUpperCase() match {
+        case "VIEW" => "VIEW"
+        case "TABLE" => "TABLE"
+        case _ => "table"
+      }
+    } ${request.distSchema.get}.${request.distName.get} AS
+       SELECT  (
+
+       ) FROM ${request.dsSchema}.${request.dsTable}
+     """.stripMargin
+  }
 
   def getAllSchemasByName(dcName: String): List[String] = {
     val dcs = HiveDcs.dcCotainer
@@ -218,6 +240,14 @@ class HiveService {
     override def port(): Int = dc.getPort
   }
 
+  /**
+    * get table columns .
+    *
+    * @param dcName     data center name
+    * @param schemaName schema name
+    * @param tableName  table or view name
+    * @return (name,type)
+    */
   def getTableTile(dcName: String, schemaName: String, tableName: String): Option[List[(String, String)]] = {
     val tableTitleCollector = new JdbcResultCollector[(String, String)] {
       override def collect(resultSet: ResultSet): (String, String) = (resultSet.getString(1), resultSet.getString(2))
