@@ -19,10 +19,12 @@
 package org.shadowmask.test.hive
 
 import java.io.{File, PrintWriter}
+import java.sql.{Connection, ResultSet}
 import java.util.UUID
 
 import org.shadowmask.framework.datacenter.hive.{HiveDcContainer, KerberizedHiveDc}
-import org.shadowmask.framework.task.hive.HiveExecutionTask
+import org.shadowmask.framework.task.{JdbcResultCollector, ProcedureWatcher}
+import org.shadowmask.framework.task.hive.{HiveExecutionTask, HiveQueryTask}
 import org.shadowmask.jdbc.connection.description.KerberizedHive2JdbcConnDesc
 import org.shadowmask.web.service.{Executor, HiveService}
 
@@ -143,6 +145,46 @@ object TestService {
     print(res)
   }
 
+
+  def testUdf():Unit={
+    var dc = dcContainer.getDc("dc1")
+    val task = new HiveQueryTask[String,KerberizedHive2JdbcConnDesc] {
+      override def sql(): String = """select skmail("abddddc@xxx.com",3) as ttt """
+
+      override def connectionDesc(): KerberizedHive2JdbcConnDesc = new KerberizedHive2JdbcConnDesc {
+        override def principal(): String = dc.asInstanceOf[KerberizedHiveDc].getPrincipal
+
+        override def host(): String = dc.getHost
+
+        override def port(): Int = dc.getPort
+
+        override def schema(): String = "tests"
+      }
+
+      override def collector(): JdbcResultCollector[String] = new JdbcResultCollector[String] {
+        override def collect(resultSet: ResultSet): String = resultSet.getString("ttt")
+      }
+    }
+    task.registerWatcher(new ProcedureWatcher() {
+      override def preStart(): Unit = {
+
+      }
+
+      override def onComplete(): Unit = {}
+
+      override def onException(e: Throwable): Unit = {}
+
+      override def onConnection(connection: Connection): Unit = {
+        connection.prepareStatement("add jar hdfs:///tmp/udf/shadowmask-core-0.1-SNAPSHOT.jar").execute();
+        connection.prepareStatement("add jar hdfs:///tmp/udf/hive-engine-0.1-SNAPSHOT.jar").execute();
+        connection.prepareStatement("CREATE TEMPORARY FUNCTION skmail AS 'org.shadowmask.engine.hive.udf.UDFEmail'").execute();
+        connection.commit()
+      }
+    })
+    Executor().executeTaskSync(task)
+    print(task.queryResults())
+  }
+
   def main(args: Array[String]) {
     initDcContainer()
 
@@ -160,7 +202,8 @@ object TestService {
 
     //    testTableContent()
 
-    testTableViewObject
+//    testTableViewObject
+    testUdf
   }
 
 

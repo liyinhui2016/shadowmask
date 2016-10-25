@@ -64,6 +64,22 @@ public abstract class JDBCTask<W extends ProcedureWatcher,DESC extends JDBCConne
     }
   }
 
+
+  /**
+   * trigger preStart
+   */
+  void triggerConnectionBuilt(final Connection connection) {
+    if (getAllWatchers() != null) {
+      for (final W w : getAllWatchers()) {
+        NeverThrow.exe(new Command() {
+          @Override public void exe() {
+            w.onConnection(connection);
+          }
+        }, new NeverThrow.LoggerConsumer(), null);
+      }
+    }
+  }
+
   /**
    * trigger Complete
    */

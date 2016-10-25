@@ -18,6 +18,8 @@
 
 package org.shadowmask.framework.task;
 
+import java.sql.Connection;
+
 /**
  * watch something
  */
@@ -27,6 +29,12 @@ public interface ProcedureWatcher {
    * executed before procedure start .
    */
   void preStart();
+
+  /**
+   * execute when connection  built .
+   * @param connection
+   */
+  void onConnection(Connection connection);
 
   /**
    * executed after procedure compleled .

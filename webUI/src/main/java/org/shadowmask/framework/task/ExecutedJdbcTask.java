@@ -38,6 +38,7 @@ public abstract class ExecutedJdbcTask<W extends RollbackableProcedureWatcher, D
     try {
       triggerPreStart();
       connection = connectDB();
+      triggerConnectionBuilt(connection);
       PreparedStatement stm = connection.prepareStatement(sql());
       stm.execute();
       if (transationSupport()) {

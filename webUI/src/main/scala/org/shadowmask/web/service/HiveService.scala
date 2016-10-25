@@ -21,10 +21,13 @@ package org.shadowmask.web.service
 
 import java.sql.ResultSet
 
+import org.shadowmask.core
+import org.shadowmask.core.discovery.DataTypeDiscovery
 import org.shadowmask.framework.datacenter.hive._
 import org.shadowmask.framework.task.JdbcResultCollector
 import org.shadowmask.framework.task.hive.HiveQueryTask
 import org.shadowmask.jdbc.connection.description.{KerberizedHive2JdbcConnDesc, SimpleHive2JdbcConnDesc}
+import org.shadowmask.model.data.TitleType
 import org.shadowmask.web.model._
 
 import scala.collection.JavaConverters._
@@ -64,12 +67,26 @@ class HiveService {
 
 
   def getTableViewObject(dcName: String, schemaName: String, tableName: String, limit: Int = 10): TableResult = {
+    val data = getTableContents(dcName, schemaName, tableName, limit)
     TableResult(0, "ok", TableContent({
+      var i = 0;
+      val titleAndValue =
       for ((name, cType) <- getTableTile(dcName, schemaName, tableName).get) yield {
-        TableTitle(name, name, cType, "#ff")
+        new javafx.util.Pair[String,String](name,if(data.get.size>0){ i+=1; data.get(0)(i-1) } else "")
       }
+      val types = DataTypeDiscovery.inspectTypes(titleAndValue.asJava).asScala.toList
+
+      (for (i <- 0 until types.size) yield {
+        val t = types(i).name() match {
+          case "IDENTIFIER" =>TitleType.ID
+          case "QUSI_IDENTIFIER"=>TitleType.HALF_ID
+          case "SENSITIVE"=>TitleType.SENSITIVE
+          case "NON_SENSITIVE"=>TitleType.NONE_SENSITIVE
+        }
+        TableTitle(titleAndValue(i).getKey,titleAndValue(i).getKey,t.name,t.color)
+      }).toList
     }, {
-      getTableContents(dcName, schemaName, tableName, limit)
+      data
     }))
   }
 

@@ -66,6 +66,7 @@ public abstract class QueryJdbcTask<T extends Serializable, W extends ProcedureW
     try {
       triggerPreStart();
       connection = connectDB();
+      triggerConnectionBuilt(connection);
       stm = connection.prepareStatement(sql());
       ResultSet resultSet = stm.executeQuery();
       if (resultSet != null) {
