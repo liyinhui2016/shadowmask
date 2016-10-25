@@ -73,7 +73,7 @@ class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
   val dataSchemaGetOperation = (apiOperation[SchemaResult]("dataSchemaGet")
     summary "get schemas of datasources ."
     parameters(headerParam[String]("Authorization").description("authentication token"),
-    formParam[String]("source").description("database type, HIVE,SPARK, etc"))
+    queryParam[String]("source").description("database type, HIVE,SPARK, etc"))
     )
 
   get("/schema", operation(dataSchemaGetOperation)) {
@@ -143,11 +143,11 @@ class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
   val dataTableGetOperation = (apiOperation[TableResult]("dataTableGet")
     summary "get n-first record of a table"
     parameters(headerParam[String]("Authorization").description("authentication token"),
-    formParam[String]("source").description("database type, HIVE,SPARK, etc"),
-    formParam[String]("datasetType").description("data set type ,TABLE,VIEW"),
-    formParam[String]("schema").description("the schema which the datasetType belongs to."),
-    formParam[String]("name").description("table/view name"),
-    formParam[Int]("rows").description("number of rows"))
+    queryParam[String]("source").description("database type, HIVE,SPARK, etc"),
+    queryParam[String]("datasetType").description("data set type ,TABLE,VIEW"),
+    queryParam[String]("schema").description("the schema which the datasetType belongs to."),
+    queryParam[String]("name").description("table/view name"),
+    queryParam[Int]("rows").description("number of rows"))
     )
 
   get("/table", operation(dataTableGetOperation)) {
@@ -182,8 +182,8 @@ class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
 
     println("rows: " + rows)
 
-//    HiveService().getTableViewObject(source.get,schema.get,name.get,rows.get)
-    HiveService().getTableViewObject("dc1","tests","user_info",10)
+    HiveService().getTableViewObject(source.get,schema.get,name.get,rows.get)
+//    HiveService().getTableViewObject("dc1","tests","user_info",10)
 
 
 
