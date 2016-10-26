@@ -24,12 +24,43 @@ import org.shadowmask.framework.task.container.AsyncTaskContainer
 import org.shadowmask.framework.task.mask.MaskTask
 
 
+import scala.collection.JavaConverters._
+
 /**
   * hive task container
   */
-class HiveMaskTaskContainer extends AsyncTaskContainer {
+class HiveMaskTaskContainer extends AsyncTaskContainer[MaskTask] {
 
   override def taskExecutor(): TaskExecutor = Executor()
+
+
+  def getTaskByPage(typee: Int, pageNum: Int, pageSie: Int): Option[(List[MaskTask], Int)] = {
+    val (start, end) = (pageNum * pageSie, (pageNum + 1) * pageSie)
+    def parse(start: Int, end: Int)(totalSize: Int) = {
+      Math.min(totalSize, start) until Math.min(end, totalSize)
+    }
+    Some(typee match {
+      case 0 => (
+        (for (i <- parse(start, end)(this.taskSubmitted.size())) yield this.taskSubmitted.get(i)
+          ).toList, this.taskSubmitted.size())
+      case 1 => (
+        (for (i <- parse(start, end)(this.taskFinished.size())) yield this.taskFinished.get(i)
+          ).toList, this.taskFinished.size())
+      case 2 => (
+        (for (i <- parse(start, end)(this.taskExcepted.size())) yield this.taskExcepted.get(i)
+          ).toList, this.taskExcepted.size())
+      case _ => (Nil, 0)
+    })
+  }
+
+  def getAllTask(typee: Int): Option[(List[MaskTask], Int)] = {
+    Some(typee match {
+      case 0 => (this.taskSubmitted.asScala.toList, this.taskSubmitted.size())
+      case 1 => (this.taskFinished.asScala.toList, this.taskFinished.size())
+      case 2 => (this.taskExcepted.asScala.toList, this.taskExcepted.size())
+      case _ => (Nil, 0)
+    })
+  }
 }
 
 object HiveMaskTaskContainer {

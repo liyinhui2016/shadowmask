@@ -214,7 +214,7 @@ object TestService {
 
     val service = new HiveService
     val sql = service.submitMaskTask(MaskRequest("dc1", "table", "tests", "user_info"
-      , "dc1", "view", "tests", "user_info3",
+      , "dc1", "table", "tests", "user_info2",
       List(
         ColRule("email", ColRule_rule("1", "Email", List(ColRule_rule_maskParams("hierarchyLevel", "1")))),
         ColRule("age", ColRule_rule("1", "Generalizer", List(
@@ -249,12 +249,12 @@ object TestService {
     //    mockData()
     //    testTableTitle
 
-        testTableContent()
+//        testTableContent()
 
     //    testTableViewObject
     //    testUdf
 //        testGenerateMaskSql
-//    testMask
+    testMask
 
 //    testPrintFuncs()
 //    Thread.sleep(60000)

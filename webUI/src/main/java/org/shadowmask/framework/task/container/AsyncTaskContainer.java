@@ -29,31 +29,31 @@ import java.util.List;
 /**
  * task container
  */
-public abstract class AsyncTaskContainer {
+public abstract class AsyncTaskContainer<T extends Task> {
 
   private static  final Logger logger = Logger.getLogger(AsyncTaskContainer.class);
 
   /**  s
    * tasks which has been submitted
    */
-  List<Task> taskSubmited = new LinkedList<>();
+  protected List<T> taskSubmitted = new LinkedList<>();
   /**
    * tasks witch completed
    */
-  List<Task> taskFinished = new LinkedList<>();
+  protected List<T> taskFinished = new LinkedList<>();
   /**
    * task which end with an excepthion
    */
-  List<Task> taskExcepted = new LinkedList<>();
+  protected List<T> taskExcepted = new LinkedList<>();
 
-  /**
+  /**T
    * task executor
    *
    * @return
    */
   public abstract TaskExecutor taskExecutor();
 
-  public void submitTask(final Task t) {
+  public void submitTask(final  T t) {
     t.registerWatcher(new Watcher() {
       @Override public void preStart() {
         logger.info(String.format("task %s will start",t));
@@ -61,8 +61,8 @@ public abstract class AsyncTaskContainer {
       }
 
       @Override public void onComplete() {
-        synchronized (taskSubmited) {
-          taskSubmited.remove(t);
+        synchronized (taskSubmitted) {
+          taskSubmitted.remove(t);
           synchronized (taskFinished) {
             logger.info(String.format("task %s finished",t));
             taskFinished.add(t);
@@ -71,8 +71,8 @@ public abstract class AsyncTaskContainer {
       }
 
       @Override public void onException(Throwable e) {
-        synchronized (taskSubmited) {
-          taskSubmited.remove(t);
+        synchronized (taskSubmitted) {
+          taskSubmitted.remove(t);
           synchronized (taskExcepted) {
             logger.info(String.format("task %s throw an exception",t),e);
             taskExcepted.add(t);
@@ -81,9 +81,9 @@ public abstract class AsyncTaskContainer {
         }
       }
     });
-    synchronized (taskSubmited) {
+    synchronized (taskSubmitted) {
       taskExecutor().executeTaskAsync(t);
-      taskSubmited.add(t);
+      taskSubmitted.add(t);
     }
   }
 

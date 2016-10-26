@@ -72,11 +72,37 @@ class DataApi(implicit val swagger: Swagger) extends ScalatraServlet
   }
 
 
+  val dataTaskGetOperation = (apiOperation[TaskResult]("dataTaskGet")
+    summary "fetch all task in some state ."
+    parameters(headerParam[String]("authorization").description(""), queryParam[String]("taskType").description(""), queryParam[String]("fetchType").description(""), queryParam[Int]("pageNum").description("").optional, queryParam[Int]("pageSize").description("").optional)
+    )
+
+  get("/task", operation(dataTaskGetOperation)) {
+
+    val authorization = request.getHeader("authorization")
+    println("authorization: " + authorization)
+    val taskType = params.getAs[String]("taskType")
+    println("taskType: " + taskType)
+    val fetchType = params.getAs[String]("fetchType")
+    println("fetchType: " + fetchType)
+    val pageNum = params.getAs[Int]("pageNum")
+    println("pageNum: " + pageNum)
+    val pageSize = params.getAs[Int]("pageSize")
+    println("pageSize: " + pageSize)
+
+    fetchType.get match {
+      case "0" => HiveService().getAllTask(taskType.get.toInt)
+      case "1" => HiveService().getTaskListByPage(taskType.get.toInt, pageNum.get, pageSize.get)
+      case _ => TaskResult(1,"unsupported fetch type",None)
+    }
+  }
+
   val dataSchemaGetOperation = (apiOperation[SchemaResult]("dataSchemaGet")
     summary "get schemas of datasources ."
     parameters(headerParam[String]("Authorization").description("authentication token"),
     queryParam[String]("source").description("database type, HIVE,SPARK, etc"))
     )
+
 
   get("/schema", operation(dataSchemaGetOperation)) {
 

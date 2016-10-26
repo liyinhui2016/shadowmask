@@ -99,6 +99,7 @@ class HiveService {
 
   /**
     * submit a task async .
+    *
     * @param request
     */
   def submitMaskTask(request: MaskRequest): Unit = {
@@ -134,7 +135,6 @@ class HiveService {
     HiveMaskTaskContainer().submitTask(new MaskTask(hiveTask))
     maskSql
   }
-
 
   /**
     * convert a mask request to a sql .
@@ -183,6 +183,44 @@ class HiveService {
     } FROM ${request.dsSchema.get}.${request.dsTable.get}""".stripMargin
   }
 
+
+  /**
+    * get task by page
+    *
+    * @param typpe
+    * @param pageNum
+    * @param pageSize
+    * @return
+    */
+  def getTaskListByPage(typpe: Int, pageNum: Int, pageSize: Int): TaskResult = {
+    TaskResult(0, "ok", {
+      val Some((result: List[MaskTask], totalSize)) = HiveMaskTaskContainer().getTaskByPage(typpe, pageNum, pageSize)
+      TaskResult_data(totalSize,
+        result.map(t => {
+          TaskViewObject(t.getTaskName, t.getSubmitTime.toString, t.getFinishTime.toString, t.getExceptedTime.toString)
+        }).toList
+      )
+    })
+  }
+
+  /**
+    * get all task .
+    *
+    * @param typpe
+    * @return
+    */
+  def getAllTask(typpe: Int): TaskResult = {
+    TaskResult(0, "ok", {
+      val Some((result: List[MaskTask], totalSize)) = HiveMaskTaskContainer().getAllTask(typpe)
+      TaskResult_data(totalSize,
+        result.map(t => {
+          TaskViewObject(t.getTaskName, t.getSubmitTime.toString, t.getFinishTime.toString, t.getExceptedTime.toString)
+        }).toList
+      )
+    })
+  }
+
+
   def getAllSchemasByName(dcName: String): List[String] = {
     val dcs = HiveDcs.dcCotainer
     getAllSchemas(dcs.getDc(dcName))
@@ -230,9 +268,9 @@ class HiveService {
   def getAllDcSchemas(): Option[List[(String, List[String])]] = {
     val dcNames = HiveDcs.dcCotainer.getAllDcNames.asScala.toList
     dcNames match {
-      case _ => None
       case lst: List[String] =>
         Some(for (dcName <- lst) yield (dcName, getAllSchemas(HiveDcs.dcCotainer.getDc(dcName))))
+      case _ => None
     }
 
   }
