@@ -28,13 +28,14 @@ class TestSql {
 
   @Test
   def testSqlFun():Unit = {
-    var tmp = new SqlFuncTemplate("sub","email",List(("name","string"),("level","int")))
-    assertEquals(tmp.toSql(Map("name"->"xxx","level"->"3")),"sub(email,'xxx',3)")
-    tmp = new SqlFuncTemplate("sub","email",List(("name","string"),("level","string")))
-    assertEquals(tmp.toSql(Map("name"->"xxx","level"->"3")),"sub(email,'xxx','3')")
+    var tmp = new SqlFuncTemplate("sub",List(("name","string"),("level","int")))
+    assertEquals(tmp.toSql("email",Map("name"->"xxx","level"->"3")),"sub(email,'xxx',3)")
 
-    tmp = new SqlFuncTemplate("sub","email",List())
-    assertEquals(tmp.toSql(Map("name"->"xxx","level"->"3")),"sub(email)")
+    tmp = new SqlFuncTemplate("sub",List(("name","string"),("level","string")))
+    assertEquals(tmp.toSql("email",Map("name"->"xxx","level"->"3")),"sub(email,'xxx','3')")
+
+    tmp = new SqlFuncTemplate("sub",List())
+    assertEquals(tmp.toSql("email",Map("name"->"xxx","level"->"3")),"sub(email)")
   }
 
 }

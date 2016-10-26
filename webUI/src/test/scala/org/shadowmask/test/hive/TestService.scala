@@ -27,6 +27,7 @@ import org.shadowmask.framework.task.{JdbcResultCollector, ProcedureWatcher}
 import org.shadowmask.framework.task.hive.{HiveExecutionTask, HiveQueryTask}
 import org.shadowmask.jdbc.connection.description.KerberizedHive2JdbcConnDesc
 import org.shadowmask.web.api.MaskRules
+import org.shadowmask.web.model.{ColRule, ColRule_rule, ColRule_rule_maskParams, MaskRequest}
 import org.shadowmask.web.service.{Executor, HiveService}
 
 import scala.util.Random
@@ -35,6 +36,8 @@ import scala.util.Random
 object TestService {
 
   var dcContainer: HiveDcContainer = null;
+
+  implicit def t2Some[T](t: T) = Some[T](t)
 
   def initDcContainer(): Unit = {
     dcContainer = new HiveDcContainer
@@ -136,7 +139,7 @@ object TestService {
 
   def testTableContent(): Unit = {
     val service = new HiveService
-    val res = service.getTableContents("dc1", "tests", "user_info", 10)
+    val res = service.getTableContents("dc1", "tests", "user_info2", 10)
     print(res)
   }
 
@@ -147,9 +150,9 @@ object TestService {
   }
 
 
-  def testUdf():Unit={
+  def testUdf(): Unit = {
     var dc = dcContainer.getDc("dc1")
-    val task = new HiveQueryTask[String,KerberizedHive2JdbcConnDesc] {
+    val task = new HiveQueryTask[String, KerberizedHive2JdbcConnDesc] {
       override def sql(): String = """select sk_phone("010-22234234",1) as ttt """
 
       override def connectionDesc(): KerberizedHive2JdbcConnDesc = new KerberizedHive2JdbcConnDesc {
@@ -178,7 +181,7 @@ object TestService {
       override def onConnection(connection: Connection): Unit = {
         connection.prepareStatement("add jar hdfs:///tmp/udf/shadowmask-core-0.1-SNAPSHOT.jar").execute();
         connection.prepareStatement("add jar hdfs:///tmp/udf/hive-engine-0.1-SNAPSHOT.jar").execute();
-        for((k,(func,clazz))<-MaskRules.commonFuncMap){
+        for ((k, (func, clazz, _)) <- MaskRules.commonFuncMap) {
           val sql = s"CREATE TEMPORARY FUNCTION $func AS '$clazz'"
           println(sql)
           connection.prepareStatement(sql).execute();
@@ -190,25 +193,72 @@ object TestService {
     print(task.queryResults())
   }
 
+
+  def testGenerateMaskSql(): Unit = {
+
+    val service = new HiveService
+    val sql = service.getMaskSql(MaskRequest("dc1", "table", "tests", "user_info"
+      , "dc1", "view", "tests", "user_info2",
+      List(
+        ColRule("email", ColRule_rule("1", "Email", List(ColRule_rule_maskParams("hierarchyLevel", "1")))),
+        ColRule("age", ColRule_rule("1", "Generalizer", List(
+          ColRule_rule_maskParams("hierarchyLevel", "1"),
+          ColRule_rule_maskParams("interval", "10")
+        )))
+      )))
+
+    print(sql)
+  }
+
+  def testMask(): Unit = {
+
+    val service = new HiveService
+    val sql = service.submitMaskTask(MaskRequest("dc1", "table", "tests", "user_info"
+      , "dc1", "view", "tests", "user_info3",
+      List(
+        ColRule("email", ColRule_rule("1", "Email", List(ColRule_rule_maskParams("hierarchyLevel", "1")))),
+        ColRule("age", ColRule_rule("1", "Generalizer", List(
+          ColRule_rule_maskParams("hierarchyLevel", "1"),
+          ColRule_rule_maskParams("interval", "10")
+        )))
+      )))
+
+    print(sql)
+  }
+
+
+  def testPrintFuncs(): Unit = {
+    for ((k, (func, clazz, _)) <- MaskRules.commonFuncMap) {
+      val sql = s"CREATE TEMPORARY FUNCTION $func AS '$clazz'"
+      println(s"$sql;")
+    }
+  }
+
   def main(args: Array[String]) {
-    initDcContainer()
+//    initDcContainer()
 
     //    testService()
 
     //    testAllSchemas
 
-    //    testGetTables()
+//        testGetTables()
 
-    //    getViewObject()
+//        getViewObject()
 
     //    testCreateTable()
     //    mockData()
     //    testTableTitle
 
-    //    testTableContent()
+        testTableContent()
 
-//    testTableViewObject
-    testUdf
+    //    testTableViewObject
+    //    testUdf
+//        testGenerateMaskSql
+//    testMask
+
+//    testPrintFuncs()
+//    Thread.sleep(60000)
+
   }
 
 

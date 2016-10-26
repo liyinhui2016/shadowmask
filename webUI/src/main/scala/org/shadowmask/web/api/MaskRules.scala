@@ -21,6 +21,7 @@ package org.shadowmask.web.api
 
 import org.shadowmask.web.model.{MaskRule, MaskRuleParam, MaskType}
 
+
 /**
   * mask rules supported .
   */
@@ -28,40 +29,37 @@ import org.shadowmask.web.model.{MaskRule, MaskRuleParam, MaskType}
 object MaskRules {
   implicit def t2Some[T](t: T) = Some[T](t)
 
-  val commonParams = List(
-    MaskRuleParam("hierarchyLevel", "level", "int")
-  )
 
   val commonFuncMap = Map(
-    "Email" ->("sk_email", "org.shadowmask.engine.hive.udf.UDFEmail"),
-    "IP" ->("sk_ip", "org.shadowmask.engine.hive.udf.UDFEmail"),
-    "Phone" ->("sk_phone", "org.shadowmask.engine.hive.udf.UDFPhone"),
-    "Mobile" ->("sk_mobile", "org.shadowmask.engine.hive.udf.UDFMobile"),
-    "Timestamp" ->("sk_timestamp", "org.shadowmask.engine.hive.udf.UDFTimestamp"),
-    "Cipher" ->("sk_cipher", "org.shadowmask.engine.hive.udf.UDFCipher"),
-    "Generalizer" ->("sk_generalizer", "org.shadowmask.engine.hive.udf.UDFGeneralization"),
-    "Mask" ->("sk_mask", "org.shadowmask.engine.hive.udf.UDFMask"),
-    "Mapping" ->("sk_mapping", "org.shadowmask.engine.hive.udf.UDFUIdentifier")
+    "Email" ->("sk_email", "org.shadowmask.engine.hive.udf.UDFEmail"
+      , List(("hierarchyLevel", "int"))),
+    "IP" ->("sk_ip", "org.shadowmask.engine.hive.udf.UDFEmail"
+      , List(("hierarchyLevel", "int"))),
+    "Phone" ->("sk_phone", "org.shadowmask.engine.hive.udf.UDFPhone"
+      , List(("hierarchyLevel", "int"))),
+    "Mobile" ->("sk_mobile", "org.shadowmask.engine.hive.udf.UDFMobile"
+      , List(("hierarchyLevel", "int"))),
+    "Timestamp" ->("sk_timestamp", "org.shadowmask.engine.hive.udf.UDFTimestamp"
+      , List(("hierarchyLevel", "int"))),
+    "Cipher" ->("sk_cipher", "org.shadowmask.engine.hive.udf.UDFCipher", Nil),
+    "Generalizer" ->("sk_generalizer", "org.shadowmask.engine.hive.udf.UDFGeneralization"
+      , List(("hierarchyLevel", "int"), ("interval", "int"))),
+    "Mask" ->("sk_mask", "org.shadowmask.engine.hive.udf.UDFMask"
+      , List(("hierarchyLevel", "int"), ("interval", "int"))),
+    "Mapping" ->("sk_mapping", "org.shadowmask.engine.hive.udf.UDFUIdentifier", Nil)
   )
 
+  def buildFunction(funcKey: String): Option[SqlFuncTemplate] = {
+    commonFuncMap.get(funcKey) match {
+      case None => None
+      case Some((funcName:String, _, funcParam:List[(String,String)])) => Some(new SqlFuncTemplate(funcName, funcParam))
+    }
+  }
 
-  val funcs = Map(
-    "1" -> commonFuncMap,
-    "2" -> commonFuncMap
-  )
-  val types = List(
-    ("Email", "Email", "Email"),
-    ("IP", "IP", "IP"),
-    ("Phone", "Phone", "Phone"),
-    ("Mobile", "Mobile", "Mobile"),
-    ("Timestamp", "Timestamp", "Timestamp"),
-    ("Cipher", "Cipher", "Cipher"),
-    ("Generalizer", "Generalizer", "Generalizer"),
-    ("Mask", "Mask", "Mask"),
-    ("Mapping", "Mapping", "Mapping")
-  )
-
-  val commonRule = for ((name, showName, desc) <- types) yield MaskRule(name, showName, desc, commonParams)
+  val commonRule = (for ((name, (funcName, _, params)) <- commonFuncMap)
+    yield MaskRule(name, name, name, {
+      for ((pName, typ) <- params) yield MaskRuleParam(pName, pName, typ)
+    })).toList
 
   val rules = List(
     MaskType("1", "ID", "标示符", commonRule),
@@ -69,19 +67,41 @@ object MaskRules {
     MaskType("3", "SENSITIVE", "敏感数据", Nil),
     MaskType("4", "NONE_SENSITIVE", "非敏感数据", Nil)
   )
-
-  //todo define all hive udfs sql
 }
 
 
+object SqlFunctionPackage {
+
+  import MaskRules._
+
+  val emailMaskFunc = buildFunction("Email")
+  val ipMaskFunc = buildFunction("IP")
+  val phoneMaskFunc = buildFunction("Phone")
+  val mobileMaskFunc = buildFunction("Mobile")
+  val timestampMaskFunc = buildFunction("Timestamp")
+  val cipherMaskFunc = buildFunction("Cipher")
+  val generalizerMaskFunc = buildFunction("Generalizer")
+  val maskMaskFunc = buildFunction("Mask")
+  val mappingMaskFunc = buildFunction("Mapping")
+
+
+}
+
 /**
   * template of sql Function invocation
+  *
   * @param name
-  * @param field
   * @param params
   */
-class SqlFuncTemplate(name: String, field: String, params: List[(String, String)]) {
-  def toSql(paramValues: Map[String, String]): String = {
+class SqlFuncTemplate(name: String, params: List[(String, String)]) {
+  /**
+    * generate sql-function statement .
+    *
+    * @param field
+    * @param paramValues
+    * @return
+    */
+  def toSql(field: String, paramValues: Map[String, String]): String = {
     val ps =
       params.length == paramValues.size match {
         case true =>

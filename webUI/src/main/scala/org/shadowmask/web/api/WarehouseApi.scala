@@ -25,6 +25,7 @@ import org.scalatra.servlet.FileUploadSupport
 import org.scalatra.swagger._
 import org.shadowmask.web.common.user.ConfiguredAuthProvider
 import org.shadowmask.web.model._
+import org.shadowmask.web.service.HiveService
 
 import scala.collection.immutable.List
 
@@ -95,17 +96,15 @@ class WarehouseApi(implicit val swagger: Swagger) extends ScalatraServlet
 
   post("/mask", operation(warehouseMaskPostOperation)) {
 
-
-    val authToken = request.getHeader("authToken")
-
-    println("authToken: " + authToken)
-
+    val authToken = request.getHeader("Authorization")
 
     val maskRule = parsedBody.extract[MaskRequest]
 
-    println("maskRule: " + maskRule)
+    HiveService().submitMaskTask(maskRule)
+
     SimpleResult(0, "ok");
   }
+
 
 
   val warehouseMaskRulesGetOperation = (apiOperation[MaskRulesResult]("warehouseMaskRulesGet")

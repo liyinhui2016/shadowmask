@@ -19,15 +19,18 @@
 
 package org.shadowmask.web.service
 
-import java.sql.ResultSet
+import java.sql.{Connection, ResultSet}
 
 import org.shadowmask.core
 import org.shadowmask.core.discovery.DataTypeDiscovery
 import org.shadowmask.framework.datacenter.hive._
-import org.shadowmask.framework.task.JdbcResultCollector
-import org.shadowmask.framework.task.hive.HiveQueryTask
+import org.shadowmask.framework.task.{JdbcResultCollector, RollbackableProcedureWatcher, SimpleRollbackWatcher, Watcher}
+import org.shadowmask.framework.task.hive.{HiveExecutionTask, HiveQueryTask}
+import org.shadowmask.framework.task.mask.MaskTask
 import org.shadowmask.jdbc.connection.description.{KerberizedHive2JdbcConnDesc, SimpleHive2JdbcConnDesc}
 import org.shadowmask.model.data.TitleType
+import org.shadowmask.web.api.MaskRules
+import org.shadowmask.web.api.MaskRules._
 import org.shadowmask.web.model._
 
 import scala.collection.JavaConverters._
@@ -94,23 +97,90 @@ class HiveService {
   }
 
 
+  /**
+    * submit a task async .
+    * @param request
+    */
+  def submitMaskTask(request: MaskRequest): Unit = {
+    val maskSql = getMaskSql(request);
+    val dcs = HiveDcs.dcCotainer
+    val dc = dcs.getDc(request.dsSource.get);
+    val hiveTask = dc match {
+      case dc: SimpleHiveDc => new HiveExecutionTask[SimpleHive2JdbcConnDesc] {
+        override def sql(): String = maskSql
+
+        override def connectionDesc(): SimpleHive2JdbcConnDesc = conSimpleDc2Desc(dc, "default")
+      }
+      case dc: KerberizedHiveDc => new HiveExecutionTask[KerberizedHive2JdbcConnDesc] {
+        override def sql(): String = maskSql
+
+        override def connectionDesc(): KerberizedHive2JdbcConnDesc = conKrbDc2Desc(dc, "default")
+      }
+    }
+    hiveTask.registerWatcher(new SimpleRollbackWatcher() {
+      override def onConnection(connection: Connection): Unit = {
+        // todo make this configurable .
+        connection.prepareStatement("add jar hdfs:///tmp/udf/shadowmask-core-0.1-SNAPSHOT.jar").execute();
+        connection.prepareStatement("add jar hdfs:///tmp/udf/hive-engine-0.1-SNAPSHOT.jar").execute();
+        connection.prepareStatement("set hive.execution.engine=spark").execute();
+        for ((k, (func, clazz, _)) <- MaskRules.commonFuncMap) {
+          val sql = s"CREATE TEMPORARY FUNCTION $func AS '$clazz'"
+          connection.prepareStatement(sql).execute();
+          println(s"$sql;")
+        }
+        connection.commit()
+      }
+    })
+    HiveMaskTaskContainer().submitTask(new MaskTask(hiveTask))
+    maskSql
+  }
+
+
+  /**
+    * convert a mask request to a sql .
+    *
+    * @param request
+    * @return
+    */
   def getMaskSql(request: MaskRequest): String = {
+    val ruleByColumn: Map[
+      String // column name
+      , (
+      String // type id 1,2 etc
+        , String // rule id Email ,Ip etc .
+        , Map[
+        String // param name
+        , String // param value
+        ]
+      )
+      ] =
+      (for (col <- request.rules.get) yield (
+        col.colName.get ->(col.rule.get.maskTypeID.get, col.rule.get.maskRuleID.get
+          , (for (param <- col.rule.get.maskParams.get) yield (param.paramName.get -> param.paramValue.get)).toMap
+          )
+        )).toMap
+
     val columns = getTableTile(request.dsSource.get, request.dsSchema.get, request.dsTable.get) match {
       case None => List()
-      case Some(list:List[(String,String)])=> for ((name,_) <- list) yield name
+      case Some(list: List[(String, String)]) => for ((name, _) <- list) yield name
     }
-    s"""
-       | CREATE ${
+    s"""| CREATE ${
       request.distType.get.toUpperCase() match {
         case "VIEW" => "VIEW"
         case "TABLE" => "TABLE"
         case _ => "table"
       }
-    } ${request.distSchema.get}.${request.distName.get} AS
-       SELECT  (
-
-       ) FROM ${request.dsSchema}.${request.dsTable}
-     """.stripMargin
+    } ${request.distSchema.get}.${request.distName.get} AS SELECT  ${
+      columns.map(c => {
+        ruleByColumn.get(c) match {
+          case None => c
+          case Some((_, maskType, paramMap: Map[String, String])) => buildFunction(maskType) match {
+            case None => c
+            case Some(func) => s"${func.toSql(c, paramMap)} AS $c"
+          }
+        }
+      }).mkString(",")
+    } FROM ${request.dsSchema.get}.${request.dsTable.get}""".stripMargin
   }
 
   def getAllSchemasByName(dcName: String): List[String] = {

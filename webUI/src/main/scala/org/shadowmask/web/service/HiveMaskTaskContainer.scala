@@ -1,3 +1,4 @@
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,20 +19,21 @@
 
 package org.shadowmask.web.service
 
-import org.shadowmask.framework.executor.{NewThreadTaskExecutor, TaskExecutor}
-import org.shadowmask.framework.task.{ProcedureWatcher, Task, Watcher}
+import org.shadowmask.framework.executor.TaskExecutor
+import org.shadowmask.framework.task.container.AsyncTaskContainer
+import org.shadowmask.framework.task.mask.MaskTask
 
-// singelton
-class Executor extends TaskExecutor {
-  val executor = new NewThreadTaskExecutor
 
-  override def executeTaskAsync(task: Task[_ <: Watcher]): Unit = {
-    executor.executeTaskAsync(task)
-  }
+/**
+  * hive task container
+  */
+class HiveMaskTaskContainer extends AsyncTaskContainer {
+
+  override def taskExecutor(): TaskExecutor = Executor()
 }
 
-object Executor {
-  def instance = new Executor
+object HiveMaskTaskContainer {
+  val instance = new HiveMaskTaskContainer;
 
-  def apply(): Executor = instance;
+  def apply(): HiveMaskTaskContainer = instance
 }
