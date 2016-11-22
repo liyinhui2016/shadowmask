@@ -15,33 +15,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.shadowmask.engine.hive.udf;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.TreeMap;
 
-public class UDAFLDObject {
+public class UDAFTCDoubleObject {
   private String row_key; // the key of this category
   private int count = 0; // the number of items in this category
-  private String sensitive_value; // the newly added sensitive value in this category
-  private Map<String, Integer> deversities; // the map of sensitive values
+  private Double sensitive_value; // the newly added sensitive value in this category
+  private Map<Double, Integer> deversities; // the map of sensitive values
   private int deversityNum = 0; // the number of deversities
 
-  public UDAFLDObject(String code) {
+  public UDAFTCDoubleObject(String code) {
     count = 0;
     row_key = code;
     sensitive_value = null;
-    deversities = new HashMap<String, Integer>();
+    deversities = new TreeMap<Double, Integer>();
     deversityNum = 0;
   }
 
-  public UDAFLDObject(String code, String value) {
+  public UDAFTCDoubleObject(String code, Double value) {
     count = 1;
     row_key = code;
     this.sensitive_value = value;
-    this.deversities = new HashMap<String, Integer>();
+    this.deversities = new TreeMap<Double, Integer>();
     this.deversities.put(sensitive_value, 1);
     this.deversityNum = 1;
   }
@@ -59,9 +57,9 @@ public class UDAFLDObject {
       return true;
     }
     if(obj == null || getClass() != obj.getClass()) {
-        return false;
+      return false;
     }
-    UDAFLDObject row = (UDAFLDObject) obj;
+    UDAFTCDoubleObject row = (UDAFTCDoubleObject) obj;
     if(!row_key.equals(row.row_key)) return false;
     return true;
   }
@@ -82,13 +80,13 @@ public class UDAFLDObject {
   }
 
   // get the newly added sensitive value
-  public String getSensitiveValue() {
+  public Double getSensitiveValue() {
     return sensitive_value;
   }
 
   // get the deversity map of this category
-  public HashMap<String, Integer> getDeversities() {
-    return (HashMap<String, Integer>) deversities;
+  public TreeMap<Double, Integer> getDeversities() {
+    return (TreeMap<Double, Integer>) deversities;
   }
 
   // set the number of items in this category
@@ -102,7 +100,7 @@ public class UDAFLDObject {
   }
 
   // put a new sensitive value into this category with its occurrence number
-  public void put(String value, int valueNumber) {
+  public void put(Double value, int valueNumber) {
     this.sensitive_value = value;
     if(!deversities.containsKey(sensitive_value)) {
       deversities.put(sensitive_value, valueNumber);
@@ -113,8 +111,9 @@ public class UDAFLDObject {
     deversityNum = deversities.size();
   }
 
-  public void put(String value) {
+  public void put(Double value) {
     put(value,1);
   }
 
 }
+
