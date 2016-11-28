@@ -27,7 +27,7 @@ import java.sql.Connection;
 /**
  * get Connection due to config
  */
-public class WrappedConnectionProvider implements ConnectionProvider {
+public class WrappedConnectionProvider extends ConnectionProvider {
 
   @Override public Connection get() {
     return KerberizedHiveConnectionProvider.getInstance().get();
@@ -45,6 +45,7 @@ public class WrappedConnectionProvider implements ConnectionProvider {
         .format("jdbc connection not acquired with jdbc description : %s ",
             desc));
   }
+
 
   // singleton
   private WrappedConnectionProvider() {

@@ -31,7 +31,7 @@ import java.sql.Connection;
  * should support both kerberized and ldap according to configuration .
  */
 public class WrappedHiveConnectionProvider<DESC extends JDBCConnectionDesc>
-    implements ConnectionProvider<DESC> {
+    extends ConnectionProvider<DESC> {
 
   @Override public Connection get() {
     if ("simple".equals(HiveProps.authMethod)) {
@@ -53,10 +53,10 @@ public class WrappedHiveConnectionProvider<DESC extends JDBCConnectionDesc>
       return SimpleHiveConnectionProvider.getInstance()
           .get((SimpleHive2JdbcConnDesc) desc);
     } else {
-      throw new RuntimeException(
-          String.format("connection description %s not supported.", desc));
+//      throw new RuntimeException(
+//          String.format("connection description %s not supported.", desc));
     }
-
+    return null;
   }
 
   // singleton

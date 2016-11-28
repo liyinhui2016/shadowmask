@@ -22,12 +22,13 @@ import org.apache.log4j.Logger;
 import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
 import org.shadowmask.jdbc.connection.description.SimpleHive2JdbcConnDesc;
 import org.shadowmask.utils.HiveProps;
+import org.shadowmask.utils.ReThrow;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class SimpleHiveConnectionProvider<DESC extends SimpleHive2JdbcConnDesc> implements ConnectionProvider<DESC> {
+public class SimpleHiveConnectionProvider<DESC extends SimpleHive2JdbcConnDesc> extends ConnectionProvider<DESC> {
 
   private static Logger logger =
       Logger.getLogger(SimpleHiveConnectionProvider.class);

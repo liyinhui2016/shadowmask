@@ -19,10 +19,41 @@
 package org.shadowmask.jdbc.connection;
 
 import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
+import org.shadowmask.utils.ReThrow;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
-public interface ConnectionProvider<DESC extends JDBCConnectionDesc> extends Supplier<Connection> {
+/**
+ * a connection provider which can get() Connection from
+ * a connection descriptor and release() Connection via method release();
+ *
+ * @param <DESC>
+ */
+public abstract class ConnectionProvider<DESC extends JDBCConnectionDesc>
+    implements Supplier<Connection> {
 
-  Connection get(DESC desc);
+  /**
+   * get a connection from an jdbc connection description
+   *
+   * @param desc
+   * @return
+   */
+  public abstract Connection get(DESC desc);
+
+  /**
+   * release a connection .
+   *
+   * @param connection
+   */
+  public void release(Connection connection) {
+    try {
+      if (connection != null) {
+        connection.close();
+      }
+    } catch (SQLException e) {
+      ReThrow.rethrow(e);
+    }
+  }
+
 }

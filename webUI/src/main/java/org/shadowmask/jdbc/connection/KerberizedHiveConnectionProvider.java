@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
 import org.shadowmask.jdbc.connection.description.KerberizedHive2JdbcConnDesc;
 import org.shadowmask.utils.HiveProps;
+import org.shadowmask.utils.ReThrow;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -31,34 +32,14 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class KerberizedHiveConnectionProvider<DESC extends KerberizedHive2JdbcConnDesc>
-    implements ConnectionProvider<DESC> {
+    extends ConnectionProvider<DESC> {
 
-//  private boolean kdcLoginSuccessfully = true;
   private static Logger logger =
       Logger.getLogger(KerberizedHiveConnectionProvider.class);
 
-  /*{
-    System.setProperty("java.security.krb5.realm", HiveProps.krbRealm);
-    System.setProperty("java.security.krb5.kdc", HiveProps.krbKDC);
-    Configuration conf = new Configuration();
-    conf.setBoolean("hadoop.security.authorization", true);
-    conf.set("hadoop.security.authentication", "kerberos");
-    UserGroupInformation.setConfiguration(conf);
-
-    try {
-      Class.forName(HiveProps.driver);
-      UserGroupInformation
-          .loginUserFromKeytab(HiveProps.krbUser, HiveProps.krbKeytab);
-    } catch (Exception e) {
-      logger.warn("driver load failed", e);
-      kdcLoginSuccessfully = false;
-    }
-
-  }
-*/
   @Override public Connection get() {
-//    if (!kdcLoginSuccessfully)
-//      throw new RuntimeException("get connection failed,kdc login failed");
+    //    if (!kdcLoginSuccessfully)
+    //      throw new RuntimeException("get connection failed,kdc login failed");
     try {
       return DriverManager.getConnection(HiveProps.url);
     } catch (SQLException e) {
@@ -68,8 +49,6 @@ public class KerberizedHiveConnectionProvider<DESC extends KerberizedHive2JdbcCo
   }
 
   @Override public Connection get(DESC desc) {
-//    if (!kdcLoginSuccessfully)
-//      throw new RuntimeException("get connection failed,kdc login failed");
     try {
       return DriverManager.getConnection(desc.toUrl());
     } catch (SQLException e) {
@@ -77,6 +56,7 @@ public class KerberizedHiveConnectionProvider<DESC extends KerberizedHive2JdbcCo
       throw new RuntimeException("get connection failed", e);
     }
   }
+
 
   // singleton
   private KerberizedHiveConnectionProvider() {

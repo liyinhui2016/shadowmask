@@ -15,29 +15,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.framework.task.hive;
+package org.shadowmask.framework.task;
 
-import org.shadowmask.framework.task.ExecutedJdbcTask;
-import org.shadowmask.framework.task.RollbackableProcedureWatcher;
 import org.shadowmask.jdbc.connection.ConnectionProvider;
-import org.shadowmask.jdbc.connection.WrappedHiveConnectionProvider;
 import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * a single hive execution task, DDL/DML etc.
+ * execute several jdbc query task with a single Jdbc connection .
+ *
  * @param <DESC>
  */
-public abstract class HiveExecutionTask<DESC extends JDBCConnectionDesc>
-    extends ExecutedJdbcTask<RollbackableProcedureWatcher, DESC> {
+public abstract class BatchedJdbcTask<DESC extends JDBCConnectionDesc>
+    extends JDBCTask<ProcedureWatcher, DESC> {
 
-  ConnectionProvider<DESC> connectionProvider;
+  /**
+   * register connection provider for a task .
+   * @param task
+   * @param connection
+   */
+  public void useConnection(JDBCTask task, final Connection connection) {
 
-  @Override public void setUp() {
-    connectionProvider = WrappedHiveConnectionProvider.getInstance();
-    super.setUp();
+    task.withConnectionProvider(new ConnectionProvider() {
+      @Override public Connection get(JDBCConnectionDesc desc) {
+        return connection;
+      }
+
+      @Override public void release(Connection connection) {
+        //do nothing
+      }
+
+      @Override public Connection get() {
+        return connection;
+      }
+    });
+
+
+
   }
 
-  @Override public ConnectionProvider<DESC> connectionProvider() {
-    return connectionProvider;
-  }
 }

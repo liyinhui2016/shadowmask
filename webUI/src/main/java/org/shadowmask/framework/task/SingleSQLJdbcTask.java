@@ -15,29 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.shadowmask.framework.task.hive;
+package org.shadowmask.framework.task;
 
-import org.shadowmask.framework.task.ExecutedJdbcTask;
-import org.shadowmask.framework.task.RollbackableProcedureWatcher;
-import org.shadowmask.jdbc.connection.ConnectionProvider;
-import org.shadowmask.jdbc.connection.WrappedHiveConnectionProvider;
 import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+
 /**
- * a single hive execution task, DDL/DML etc.
+ * a kind of task only execute single SQL statement
+ *
+ * @param <W>
  * @param <DESC>
  */
-public abstract class HiveExecutionTask<DESC extends JDBCConnectionDesc>
-    extends ExecutedJdbcTask<RollbackableProcedureWatcher, DESC> {
+public abstract class SingleSQLJdbcTask<W extends ProcedureWatcher, DESC extends JDBCConnectionDesc>
+    extends JDBCTask<W, DESC> {
 
-  ConnectionProvider<DESC> connectionProvider;
+  /**
+   * executable sql. could be setup at client-end .
+   *
+   * @return
+   */
+  public abstract String sql();
 
-  @Override public void setUp() {
-    connectionProvider = WrappedHiveConnectionProvider.getInstance();
-    super.setUp();
-  }
-
-  @Override public ConnectionProvider<DESC> connectionProvider() {
-    return connectionProvider;
-  }
 }
