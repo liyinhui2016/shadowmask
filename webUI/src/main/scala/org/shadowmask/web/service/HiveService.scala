@@ -320,8 +320,6 @@ class HiveService {
         this.withConnectionProvider(new ConnectionProvider[D] {
           override def get(desc: D): Connection = connection
 
-          override def get(): Connection = connection
-
           override def release(connection: Connection): Unit = {}
         })
 

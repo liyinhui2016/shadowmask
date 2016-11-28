@@ -18,11 +18,9 @@
 
 package org.shadowmask.jdbc.connection;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
 import org.shadowmask.jdbc.connection.description.KerberizedHive2JdbcConnDesc;
 import org.shadowmask.jdbc.connection.description.SimpleHive2JdbcConnDesc;
-import org.shadowmask.utils.HiveProps;
 
 import java.sql.Connection;
 
@@ -33,18 +31,6 @@ import java.sql.Connection;
 public class WrappedHiveConnectionProvider<DESC extends JDBCConnectionDesc>
     extends ConnectionProvider<DESC> {
 
-  @Override public Connection get() {
-    if ("simple".equals(HiveProps.authMethod)) {
-      return SimpleHiveConnectionProvider.getInstance().get();
-    } else if ("kerberos".equals(HiveProps.authMethod)) {
-      return KerberizedHiveConnectionProvider.getInstance().get();
-    } else {
-      throw new RuntimeException(String
-          .format("authorization method %s not support in HIVE",
-              HiveProps.authMethod));
-    }
-  }
-
   @Override public Connection get(DESC desc) {
     if (desc instanceof KerberizedHive2JdbcConnDesc) {
       return KerberizedHiveConnectionProvider.getInstance()
@@ -53,10 +39,9 @@ public class WrappedHiveConnectionProvider<DESC extends JDBCConnectionDesc>
       return SimpleHiveConnectionProvider.getInstance()
           .get((SimpleHive2JdbcConnDesc) desc);
     } else {
-//      throw new RuntimeException(
-//          String.format("connection description %s not supported.", desc));
+      throw new RuntimeException(
+          String.format("connection description %s not supported.", desc));
     }
-    return null;
   }
 
   // singleton

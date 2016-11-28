@@ -18,15 +18,9 @@
 
 package org.shadowmask.jdbc.connection;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.log4j.Logger;
-import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
 import org.shadowmask.jdbc.connection.description.KerberizedHive2JdbcConnDesc;
-import org.shadowmask.utils.HiveProps;
-import org.shadowmask.utils.ReThrow;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -37,16 +31,6 @@ public class KerberizedHiveConnectionProvider<DESC extends KerberizedHive2JdbcCo
   private static Logger logger =
       Logger.getLogger(KerberizedHiveConnectionProvider.class);
 
-  @Override public Connection get() {
-    //    if (!kdcLoginSuccessfully)
-    //      throw new RuntimeException("get connection failed,kdc login failed");
-    try {
-      return DriverManager.getConnection(HiveProps.url);
-    } catch (SQLException e) {
-      logger.warn("get jdbc connection failed", e);
-      throw new RuntimeException("get connection failed", e);
-    }
-  }
 
   @Override public Connection get(DESC desc) {
     try {
