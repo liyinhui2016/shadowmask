@@ -29,9 +29,6 @@ import java.sql.Connection;
  */
 public class WrappedConnectionProvider extends ConnectionProvider {
 
-  @Override public Connection get() {
-    return KerberizedHiveConnectionProvider.getInstance().get();
-  }
 
   @Override public Connection get(JDBCConnectionDesc desc) {
     if (desc instanceof KerberizedHive2JdbcConnDesc) {

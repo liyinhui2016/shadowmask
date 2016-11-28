@@ -33,6 +33,12 @@ import java.sql.SQLException;
 public abstract class ConnectionProvider<DESC extends JDBCConnectionDesc>
     implements Supplier<Connection> {
 
+
+  @Deprecated
+  @Override public Connection get() {
+    return null;
+  }
+
   /**
    * get a connection from an jdbc connection description
    *

@@ -19,10 +19,7 @@
 package org.shadowmask.jdbc.connection;
 
 import org.apache.log4j.Logger;
-import org.shadowmask.jdbc.connection.description.JDBCConnectionDesc;
 import org.shadowmask.jdbc.connection.description.SimpleHive2JdbcConnDesc;
-import org.shadowmask.utils.HiveProps;
-import org.shadowmask.utils.ReThrow;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -33,16 +30,6 @@ public class SimpleHiveConnectionProvider<DESC extends SimpleHive2JdbcConnDesc> 
   private static Logger logger =
       Logger.getLogger(SimpleHiveConnectionProvider.class);
 
-
-
-  @Override public Connection get() {
-    try {
-      return DriverManager.getConnection(HiveProps.url,HiveProps.user,HiveProps.password);
-    } catch (SQLException e) {
-      logger.warn("get jdbc connection failed", e);
-      throw new RuntimeException("get connection failed", e);
-    }
-  }
 
   @Override public Connection get(DESC desc) {
     try {

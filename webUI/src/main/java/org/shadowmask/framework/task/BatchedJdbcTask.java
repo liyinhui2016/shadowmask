@@ -47,10 +47,6 @@ public abstract class BatchedJdbcTask<DESC extends JDBCConnectionDesc>
       @Override public void release(Connection connection) {
         //do nothing
       }
-
-      @Override public Connection get() {
-        return connection;
-      }
     });
 
 
